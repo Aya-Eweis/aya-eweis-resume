@@ -371,6 +371,192 @@
             transform: translateY(-2px);
         }
 
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px 15px 140px 15px;
+                font-size: 14px;
+            }
+            
+            .mindmap-container {
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            
+            .mindmap > ul {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-left: 0;
+            }
+            
+            .mindmap li > span {
+                min-width: 120px;
+                max-width: calc(100vw - 60px);
+                padding: 10px 12px;
+                font-size: 13px;
+                line-height: 1.4;
+                word-wrap: break-word;
+                text-align: left;
+                box-sizing: border-box;
+            }
+            
+            .mindmap > ul > li > span {
+                font-size: 16px;
+                padding: 12px 15px;
+                max-width: calc(100vw - 40px);
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .mindmap ul {
+                padding-left: 30px;
+            }
+            
+            .mindmap .skills-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 10px 15px;
+                padding-left: 30px;
+                max-width: 100%;
+            }
+            
+            .mindmap .skills-grid li > span {
+                font-size: 12px;
+                padding: 8px 10px;
+                min-width: auto;
+            }
+            
+            /* Improve touch targets for mobile */
+            .mindmap .has-children > span {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(219, 67, 152, 0.3);
+            }
+            
+            /* Hide hover popups on mobile */
+            .hover-popup {
+                display: none;
+            }
+            
+            /* Mobile chatbot adjustments */
+            .chatbot-container {
+                width: calc(100% - 20px);
+                max-width: none;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                bottom: 10px;
+            }
+            
+            .chatbot-input-container {
+                padding: 8px;
+                border-radius: 20px;
+            }
+            
+            .chatbot-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 10px 12px;
+            }
+            
+            .chatbot-send {
+                padding: 10px 12px;
+                font-size: 14px;
+                border-radius: 16px;
+                min-width: 60px;
+            }
+            
+            .chatbot-message .message-content {
+                font-size: 14px;
+                padding: 10px 12px;
+                max-width: 85%;
+            }
+            
+            .chatbot-messages {
+                max-height: 300px;
+                margin-bottom: 8px;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 8px 10px 120px 10px;
+                font-size: 13px;
+            }
+            
+            .mindmap li > span {
+                min-width: 100px;
+                max-width: calc(100vw - 40px);
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+            
+            .mindmap > ul > li > span {
+                font-size: 14px;
+                padding: 10px 12px;
+                max-width: calc(100vw - 20px);
+            }
+            
+            .mindmap ul {
+                padding-left: 20px;
+            }
+            
+            .mindmap .skills-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 8px 10px;
+                padding-left: 20px;
+            }
+            
+            .mindmap .skills-grid li > span {
+                font-size: 11px;
+                padding: 6px 8px;
+            }
+            
+            .chatbot-container {
+                width: calc(100% - 16px);
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+            }
+            
+            .chatbot-input {
+                font-size: 16px;
+                padding: 8px 10px;
+            }
+            
+            .chatbot-send {
+                padding: 8px 10px;
+                font-size: 13px;
+                min-width: 50px;
+            }
+            
+            .chatbot-message .message-content {
+                font-size: 13px;
+                padding: 8px 10px;
+                max-width: 90%;
+            }
+        }
+        
+        /* Landscape mobile adjustments */
+        @media screen and (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 5px 10px 80px 10px;
+            }
+            
+            .chatbot-container {
+                bottom: 5px;
+            }
+            
+            .chatbot-messages {
+                max-height: 150px;
+            }
+            
+            .mindmap > ul > li > span {
+                margin-bottom: 10px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -524,10 +710,36 @@
         const toggles = document.querySelectorAll('.mindmap .has-children > span');
 
         toggles.forEach(toggle => {
+            // Add touch-friendly event handling
+            let touchStartTime = 0;
+            let touchHandled = false;
+            
+            // Handle touch events for mobile
+            toggle.addEventListener('touchstart', function(e) {
+                touchStartTime = Date.now();
+                touchHandled = false;
+            }, { passive: true });
+            
+            toggle.addEventListener('touchend', function(e) {
+                const touchDuration = Date.now() - touchStartTime;
+                if (touchDuration < 300 && !touchHandled) { // Quick tap
+                    touchHandled = true;
+                    e.preventDefault();
+                    toggleNode(this);
+                }
+            });
+            
+            // Handle click events for desktop
             toggle.addEventListener('click', function(e) {
+                if (!touchHandled) {
+                    toggleNode(this);
+                }
+                touchHandled = false;
+            });
+            
+            function toggleNode(element) {
                 // Prevent the click from bubbling up if not needed
-                e.stopPropagation(); 
-                const parentLi = this.parentElement;
+                const parentLi = element.parentElement;
                 const parentUl = parentLi.parentElement;
                 
                 // If this item is currently collapsed, we want to expand it
@@ -547,12 +759,22 @@
                     
                     // Hide chat messages when any element is expanded
                     chatbotMessages.classList.add('hidden');
+                    
+                    // Scroll to the expanded item on mobile
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => {
+                            element.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                            });
+                        }, 100);
+                    }
                 } else {
                     // If it's expanded, just collapse it
                     parentLi.classList.remove('expanded');
                     parentLi.classList.add('collapsed');
                 }
-            });
+            }
         });
 
         // Simple Chatbot functionality
@@ -904,28 +1126,59 @@ When appropriate, use rich formatting:
             const leafNodes = document.querySelectorAll('.mindmap .is-leaf > span');
             
             leafNodes.forEach(node => {
+                // Desktop hover functionality
                 node.addEventListener('mouseenter', function() {
-                    const nodeText = this.textContent.trim();
-                    
-                    // Clear any existing timeouts
-                    clearTimeout(hoverTimeout);
-                    clearTimeout(hideTimeout);
-                    
-                    // Start hover timer
-                    hoverTimeout = setTimeout(() => {
-                        showHoverPopup(this, nodeText);
-                    }, 1000);
+                    if (window.innerWidth > 768) { // Only on desktop
+                        const nodeText = this.textContent.trim();
+                        
+                        // Clear any existing timeouts
+                        clearTimeout(hoverTimeout);
+                        clearTimeout(hideTimeout);
+                        
+                        // Start hover timer
+                        hoverTimeout = setTimeout(() => {
+                            showHoverPopup(this, nodeText);
+                        }, 1000);
+                    }
                 });
                 
                 node.addEventListener('mouseleave', function() {
-                    clearTimeout(hoverTimeout);
+                    if (window.innerWidth > 768) { // Only on desktop
+                        clearTimeout(hoverTimeout);
+                        
+                        // Only hide if we're not moving to the popup
+                        hideTimeout = setTimeout(() => {
+                            if (currentHoveredNode === this) {
+                                hideHoverPopup();
+                            }
+                        }, 200); // Give time to move to popup
+                    }
+                });
+                
+                // Mobile touch functionality - double tap to ask about
+                let lastTap = 0;
+                node.addEventListener('touchend', function(e) {
+                    const currentTime = new Date().getTime();
+                    const tapLength = currentTime - lastTap;
                     
-                    // Only hide if we're not moving to the popup
-                    hideTimeout = setTimeout(() => {
-                        if (currentHoveredNode === this) {
-                            hideHoverPopup();
-                        }
-                    }, 200); // Give time to move to popup
+                    if (tapLength < 500 && tapLength > 0) {
+                        // Double tap detected
+                        e.preventDefault();
+                        const nodeText = this.textContent.trim();
+                        const message = `Tell me about: ${nodeText}`;
+                        chatbotInput.value = message;
+                        chatbotInput.focus();
+                        
+                        // Show visual feedback
+                        this.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 150);
+                        
+                        // Show chat messages
+                        chatbotMessages.classList.remove('hidden');
+                    }
+                    lastTap = currentTime;
                 });
             });
         }
